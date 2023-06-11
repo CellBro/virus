@@ -133,7 +133,7 @@ kill endp
     dta        db     02bh dup(0)
     string     db     "I'm a kill!",13,10,'$'
     head       db     30h dup(0)
-    warnning   db     "virus is Detected！！", 0dh,0ah,24h
+    warnning   db     "virus is detected", 0dh,0ah,24h
     theend:    
 code ends
 end start
