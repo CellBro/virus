@@ -23,7 +23,7 @@ code segment
              int    21h
 
              push   cs                         ;跳转回原程序代码
-             mov    ax,word ptr [si+02eh]      ;02e即原来的14-15
+             mov    ax,word ptr [si+2ch]      ;02e即原来的14-15
              push   ax
              retf
 
@@ -34,7 +34,7 @@ kill proc
              sub    bp,offset locate           ;bp=0
 
              lea    dx,[bp+offset dta]         ;置dta
-             mov    ah,1ah                     ;	设置磁盘缓冲区DTA，，DS:DX=磁盘缓冲区首址
+             mov    ah,1ah                     ;设置磁盘缓冲区DTA，，DS:DX=磁盘缓冲区首址
              int    21h
 
              lea    dx,[bp+offset filename]    ;查找第一个文件
@@ -68,10 +68,12 @@ kill proc
 
              cmp    word ptr [si+2ah],6666h    ;检查是否已被感染
              jne    nextfile
+
              mov    word ptr [si+2ah],0h
 
-             mov    ax,word ptr [si+02eh]      ;保存原程序入口;;表示14-15H: b.exe 被载入后 IP 的初值是
-             mov    word ptr [si+014h],ax      ;保存信息在head
+             mov    ax,word ptr [si+2ch]      ;恢复其原来的ip地址
+
+             mov    word ptr [si+014h],ax 
 
              xor    cx,cx                      ;到文件尾，病毒代码插入到尾部
              xor    dx,dx
@@ -97,7 +99,7 @@ kill proc
              mov    cx,30h
              int    21h
 
-            lea    dx,[bp+offset dta]         ;匹配结果再磁盘缓冲区中
+            lea    dx,[bp+offset dta]         ;匹配结果在磁盘缓冲区中
             add    dx,1eh       
             mov    ah,09h
             int 21h
@@ -120,10 +122,10 @@ kill proc
 kill endp
 
 
-    filename db     "*.exe",0
-    dta      db     02bh dup(0)
-    string   db     "I'm a kill!",13,10,'$'
-    head     db     30h dup(0)
+filename db     "*.exe",0
+dta      db     030h dup(0)
+string   db     "virus has been cleared!",13,10,'$'
+head     db     30h dup(0)
 
     theend:  
 code ends
