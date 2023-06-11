@@ -39,7 +39,7 @@ code segment
 
                mov    ah,3eh                     ;关闭文件
                int    21h
-               cmp    word ptr [si+2ah],8888h    ;检查是否已被感染
+               cmp    word ptr [si+2ah],6666h    ;检查是否已被感染
                jne    watch
                lea    dx,warnning
                mov    ah,09h
@@ -84,7 +84,7 @@ kill proc
                cmp    word ptr [si],5a4dh        ;检查是否是exe
                jnz    nextfile
 
-               cmp    word ptr [si+2ah],8888h    ;检查是否已被感染
+               cmp    word ptr [si+2ah],6666h    ;检查是否已被感染
                jne    nextfile
                mov    word ptr [si+2ah],0h
 
