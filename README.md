@@ -12,11 +12,11 @@
 
 ## 项目环境
 
-**1.**   **编译环境：**DOSBOX
+**1.**   编译环境：**DOSBOX**
 
-**2.**   **工具选择：**MASM
+**2.**   工具选择：**MASM**
 
-**3.**   **IDE**：**Visual Studio Code**
+**3.**   IDE：**Visual Studio Code**
 
 ## 组成文件
 
